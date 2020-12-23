@@ -897,29 +897,3 @@ packages:
 # The addon deployment can be moved out once we have a stable endpoint
 runcmd:
   - [ /usr/local/bin/init.sh ]
-
-bootcmd:
-  - sh -c 'while [ ! -b /dev/sdb ]; do sleep 1; done'
-
-disk_setup:
-  /dev/sdb:
-    table_type: 'mbr'
-    layout:
-      - [100, 83]
-    overwrite: true
-
-fs_setup:
-  - label: None
-    filesystem: 'ext4'
-    device: '/dev/sdb1'
-    partition: 'auto'
-
-# https://cloudinit.readthedocs.io/en/latest/topics/examples.html#adjust-mount-points-mounted
-mounts:
- - [ /dev/sdb1, /var/lib/containerd, auto ]
-#  - [ sdc, /var/lib/kubelet/ ]
-#  - [ xvdh, /opt/data, "auto", "defaults,nofail", "0", "0" ]
-#  - [ dd, /dev/zero ]
-
-
-

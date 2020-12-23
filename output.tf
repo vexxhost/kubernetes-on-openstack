@@ -5,7 +5,7 @@ output "master_ip" {
 data "template_file" "kubeconfig" {
   template = "${file("${path.module}/templates/kubeconfig.tpl")}"
 
-  vars {
+  vars = {
     username       = "${var.username}"
     password       = "${var.password}"
     auth_url       = "${var.auth_url}"

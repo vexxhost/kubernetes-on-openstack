@@ -1,31 +1,27 @@
 # Configure the OpenStack Provider
 provider "openstack" {
-  version = ">= v1.6.0"
+    user_name   = "${var.username}"
+    tenant_id   = "${var.project_id}"
+    password    = "${var.password}"
+    auth_url    = "${var.auth_url}"
+	  region 		= "${var.cloud_region}"
+    insecure    = true
 }
 
 provider "local" {
-  version = "~> v1.1.0"
+  version = "~> 2.0.0"
 }
 
 resource "openstack_compute_keypair_v2" "basic_keypair" {
   name       = "${var.cluster_name}_keypair"
-  public_key = "${file(var.ssh_pub_key)}"
+  public_key = file(var.ssh_pub_key)
 }
 
-data "openstack_images_image_v2" "ubuntu" {
-  visibility  = "${var.image_visibility}"
-  most_recent = true
-
-  properties {
-    os_distro  = "ubuntu"
-    os_version = "18.04"
-  }
-}
 
 data "template_file" "master_init" {
   template = "${file("${path.module}/scripts/master.cfg.tpl")}"
 
-  vars {
+  vars = {
     bootstrap_token         = "${var.bootstrap_token != "" ? var.bootstrap_token : format("%s.%s", random_string.firstpart.result, random_string.secondpart.result)}"
     username                = "${var.username}"
     password                = "${var.password}"
@@ -81,7 +77,7 @@ resource "openstack_compute_instance_v2" "master" {
   }
 
   block_device {
-    uuid                  = "${data.openstack_images_image_v2.ubuntu.id}"
+    uuid                  = "${var.vms_image_id}"
     source_type           = "image"
     destination_type      = "local"
     boot_index            = 0
@@ -100,7 +96,7 @@ resource "openstack_compute_instance_v2" "master" {
 data "template_file" "node_init" {
   template = "${file("${path.module}/scripts/node.cfg.tpl")}"
 
-  vars {
+  vars = {
     bootstrap_token         = "${var.bootstrap_token != "" ? var.bootstrap_token : format("%s.%s", random_string.firstpart.result, random_string.secondpart.result)}"
     username                = "${var.username}"
     password                = "${var.password}"
@@ -146,7 +142,7 @@ resource "openstack_compute_instance_v2" "node" {
   }
 
   block_device {
-    uuid                  = "${data.openstack_images_image_v2.ubuntu.id}"
+    uuid                  = "${var.vms_image_id}"
     source_type           = "image"
     destination_type      = "local"
     boot_index            = 0
