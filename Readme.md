@@ -26,10 +26,10 @@ We assume `example` to be your working directory for all following commands.
 
 ### Install keystone auth plugin
 
-The Kubernetes cluster will use Keystone authentication (over a WebHook). For mor details look at the official [docs](https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/using-keystone-webhook-authenticator-and-authorizer.md#new-kubectl-clients-from-v1110-and-later) or just use the quick start:
+The Kubernetes cluster will use Keystone authentication (over a WebHook). For mor details look at the official [docs](https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/keystone-auth/using-keystone-webhook-authenticator-and-authorizer.md#new-kubectl-clients-from-v1110-and-later) or just use the quick start:
 
 ```bash
-VERSION=1.13.1
+VERSION=v1.19.0
 OS=$(uname | tr '[:upper:]' '[:lower:]')
 curl -sLO "https://github.com/kubernetes/cloud-provider-openstack/releases/download/${VERSION}/cloud-provider-openstack-${VERSION}-${OS}-amd64.tar.gz"
 tar xfz cloud-provider-openstack-${VERSION}-${OS}-amd64.tar.gz
