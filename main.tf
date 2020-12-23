@@ -61,13 +61,12 @@ resource "openstack_networking_port_v2" "master" {
 
 resource "openstack_compute_instance_v2" "master" {
   name            = "${var.cluster_name}-master"
-  image_id        = "${data.openstack_images_image_v2.ubuntu.id}"
   flavor_name     = "${var.flavor}"
   key_pair        = "${openstack_compute_keypair_v2.basic_keypair.id}"
   security_groups = ["${openstack_networking_secgroup_v2.secgroup_master.name}", "${openstack_networking_secgroup_v2.secgroup_node.name}"]
   user_data       = "${data.template_cloudinit_config.master_config.rendered}"
 
-  metadata {
+  metadata = {
     kubernetes = "master"
     cluster    = "${var.cluster_name}"
   }
@@ -79,19 +78,13 @@ resource "openstack_compute_instance_v2" "master" {
   block_device {
     uuid                  = "${var.vms_image_id}"
     source_type           = "image"
-    destination_type      = "local"
+    volume_size           = "${var.master_data_volume_size}"
+    destination_type      = "volume"
     boot_index            = 0
     delete_on_termination = true
   }
-
-  block_device {
-    source_type           = "blank"
-    destination_type      = "volume"
-    volume_size           = "${var.master_data_volume_size}"
-    boot_index            = 1
-    delete_on_termination = true
-  }
 }
+
 
 data "template_file" "node_init" {
   template = "${file("${path.module}/scripts/node.cfg.tpl")}"
@@ -126,13 +119,12 @@ data "template_cloudinit_config" "node_config" {
 resource "openstack_compute_instance_v2" "node" {
   count           = "${var.node_count}"
   name            = "${var.cluster_name}-node-${count.index}"
-  image_id        = "${data.openstack_images_image_v2.ubuntu.id}"
   flavor_name     = "${var.flavor}"
   key_pair        = "${openstack_compute_keypair_v2.basic_keypair.id}"
   security_groups = ["${openstack_networking_secgroup_v2.secgroup_node.name}"]
   user_data       = "${data.template_cloudinit_config.node_config.rendered}"
 
-  metadata {
+  metadata = {
     kubernetes = "node"
     cluster    = "${var.cluster_name}"
   }
@@ -144,16 +136,9 @@ resource "openstack_compute_instance_v2" "node" {
   block_device {
     uuid                  = "${var.vms_image_id}"
     source_type           = "image"
-    destination_type      = "local"
-    boot_index            = 0
-    delete_on_termination = true
-  }
-
-  block_device {
-    source_type           = "blank"
-    destination_type      = "volume"
     volume_size           = "${var.node_data_volume_size}"
-    boot_index            = 1
+    destination_type      = "volume"
+    boot_index            = 0
     delete_on_termination = true
   }
 }
