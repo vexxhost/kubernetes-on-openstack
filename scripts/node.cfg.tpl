@@ -37,32 +37,6 @@ apt:
         -----END PGP PUBLIC KEY BLOCK-----
 write_files:
 -   content: |
-        [Global]
-        username="${username}"
-        password="${password}"
-        auth-url="${auth_url}"
-        tenant-id="${project_id}"
-        domain-name="${domain_name}"
-
-        [LoadBalancer]
-        subnet-id="${subnet_id}"
-        floating-network-id="${public_network_id}"
-        create-monitor="true"
-        monitor-delay="10s"
-        monitor-timeout="2000s"
-        monitor-max-retries="3"
-        use-octavia=true
-
-        [BlockStorage]
-        bs-version=v2
-
-        [Networking]
-        public-network-name=public
-        ipv6-support-disabled=false
-    path: /etc/kubernetes/pki/cloud-config
-    owner: root:root
-    permissions: '0600'
--   content: |
         apiVersion: kubeadm.k8s.io/v1beta1
         caCertPath: /etc/kubernetes/pki/ca.crt
         discovery:
@@ -77,8 +51,6 @@ write_files:
           criSocket: /run/containerd/containerd.sock
           kubeletExtraArgs:
             node-labels: "node-role.kubernetes.io/node=\"\""
-            cloud-config: /etc/kubernetes/pki/cloud-config
-            cloud-provider: external
             container-runtime: remote
             container-runtime-endpoint: unix:///run/containerd/containerd.sock
     path: /etc/kubernetes/kubeadm.yaml
