@@ -68,13 +68,13 @@ variable node_count {
 variable kubernetes_version {
   description = "The deployed kubernetes version"
   type        = string
-  default     = "1.13.2"
+  default     = "1.19.0"
 }
 
 variable kubernetes_cni_version {
   description = "The deployed kubernetes cni version"
   type        = string
-  default     = "0.6.0"
+  default     = "0.8.6"
 }
 
 variable pod_subnet {
@@ -93,7 +93,7 @@ variable bootstrap_token {
 variable containerd_version {
   description = "The version of the installed containerd daemon"
   type        = string
-  default     = "1.2.4"
+  default     = "1.3.4"
 }
 
 variable cluster_network_node_cidr {

@@ -281,6 +281,7 @@ write_files:
     path: /etc/kubernetes/addons/rbac-default.yaml
     owner: root:root
     permissions: '0600'
+    # NOTE(Alex): No need to use this auth plugin
 -   content: |
         apiVersion: apps/v1
         kind: Deployment
@@ -300,7 +301,7 @@ write_files:
             spec:
               containers:
                 - name: k8s-keystone-auth
-                  image: k8scloudprovider/k8s-keystone-auth:1.13.1
+                  image: k8scloudprovider/k8s-keystone-auth:v1.19.0
                   args:
                     - ./bin/k8s-keystone-auth
                     - --v=10
@@ -760,77 +761,6 @@ write_files:
     owner: root:root
     permissions: '0600'
 -   content: |
-        ---
-        apiVersion: v1
-        kind: ServiceAccount
-        metadata:
-          name: cloud-controller-manager
-          namespace: kube-system
-        ---
-        apiVersion: v1
-        kind: ServiceAccount
-        metadata:
-          name: cloud-node-controller
-          namespace: kube-system
-        ---
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: openstack-cloud-controller-manager
-          namespace: kube-system
-          labels:
-            k8s-app: openstack-cloud-controller-manager
-        spec:
-          selector:
-            matchLabels:
-              k8s-app: openstack-cloud-controller-manager
-          template:
-            metadata:
-              labels:
-                k8s-app: openstack-cloud-controller-manager
-            spec:
-              securityContext:
-                runAsUser: 1001
-              tolerations:
-              - key: node.cloudprovider.kubernetes.io/uninitialized
-                value: "true"
-                effect: NoSchedule
-              - key: node-role.kubernetes.io/master
-                effect: NoSchedule
-              serviceAccountName: cloud-controller-manager
-              # ToDo Add health checks
-              containers:
-                - name: openstack-cloud-controller-manager
-                  image: k8scloudprovider/openstack-cloud-controller-manager:1.13.1
-                  args:
-                    - ./bin/openstack-cloud-controller-manager
-                    - --v=2
-                    - --cloud-config=/etc/cloud/cloud.conf
-                    - --cloud-provider=openstack
-                    - --use-service-account-credentials=true
-                    - --bind-address=127.0.0.1
-                  volumeMounts:
-                    - mountPath: /etc/ssl/certs
-                      name: ca-certs
-                      readOnly: true
-                    - mountPath: /etc/cloud
-                      name: cloud-config-volume
-                      readOnly: true
-                  resources:
-                    requests:
-                      cpu: 200m
-              volumes:
-              - hostPath:
-                  path: /etc/ssl/certs
-                  type: DirectoryOrCreate
-                name: ca-certs
-              - name: cloud-config-volume
-                secret:
-                  secretName: cloud-config
-    path: /etc/kubernetes/addons/openstack-ccm.yaml
-    owner: root:root
-    permissions: '0600'
--   content: |
         #!/bin/bash
         set -eu
 
@@ -855,21 +785,21 @@ write_files:
         chown ubuntu /home/ubuntu/.kube/config
 
         export KUBECONFIG=/etc/kubernetes/admin.conf
-        # a bug prevents downloading from quay.io -> open: could not fetch content descriptor -> https://github.com/containerd/containerd/issues/2840 so currently we limited and stuck with the old version
-        kubectl apply -f "https://docs.projectcalico.org/v3.4/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml"
-        kubectl --namespace=kube-system patch daemonset kube-proxy --type=json -p='[{"op": "add", "path": "/spec/template/spec/tolerations/0", "value": {"effect": "NoSchedule", "key": "node.cloudprovider.kubernetes.io/uninitialized", "value": "true"} }]'
-        kubectl --namespace=kube-system patch deployment coredns --type=json -p='[{"op": "add", "path": "/spec/template/spec/tolerations/0", "value": {"effect": "NoSchedule", "key": "node.cloudprovider.kubernetes.io/uninitialized", "value": "true"} }]'
+        kubectl apply -f "https://docs.projectcalico.org/archive/v3.15/manifests/calico.yaml"
 
-        kubectl --namespace=kube-system apply -f https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/1.13.1/cluster/addons/rbac/cloud-controller-manager-roles.yaml
-        kubectl --namespace=kube-system apply -f https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/1.13.1/cluster/addons/rbac/cloud-controller-manager-role-bindings.yaml
-        kubectl --namespace=kube-system create secret generic cloud-config --from-file=cloud.conf=/etc/kubernetes/pki/cloud-config
-        kubectl --namespace=kube-system create secret generic keystone-auth-certs --from-file=/etc/kubernetes/pki/apiserver.crt --from-file=/etc/kubernetes/pki/apiserver.key
-        kubectl apply --namespace=kube-system  -f "/etc/kubernetes/addons"
+        kubectl -n kube-system patch daemonset kube-proxy --type=json -p='[{"op": "add", "path": "/spec/template/spec/tolerations/0", "value": {"effect": "NoSchedule", "key": "node.cloudprovider.kubernetes.io/uninitialized", "value": "true"} }]'
+        kubectl -n kube-system patch deployment coredns --type=json -p='[{"op": "add", "path": "/spec/template/spec/tolerations/0", "value": {"effect": "NoSchedule", "key": "node.cloudprovider.kubernetes.io/uninitialized", "value": "true"} }]'
+
+        # Openstack cloud controller manager
+        kubectl -n kube-system create secret generic cloud-config --from-file=cloud.conf=/etc/kubernetes/pki/cloud-config
+        kubectl -n kube-system apply -f https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/v1.19.0/cluster/addons/rbac/cloud-controller-manager-roles.yaml
+        kubectl -n kube-system apply -f https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/v1.19.0/cluster/addons/rbac/cloud-controller-manager-role-bindings.yaml
+        kubectl -n kube-system apply -f https://raw.githubusercontent.com/kubernetes/cloud-provider-openstack/v1.19.0/manifests/controller-manager/openstack-cloud-controller-manager-ds.yaml
+        kubectl -n kube-system create secret generic keystone-auth-certs --from-file=/etc/kubernetes/pki/apiserver.crt --from-file=/etc/kubernetes/pki/apiserver.key
+        kubectl apply -n kube-system  -f "/etc/kubernetes/addons"
 
         # Install Metrics Server
-        #git clone -b v0.3.1 -- https://github.com/kubernetes-incubator/metrics-server.git
-        #kubectl --namespace=kube-system apply -f metrics-server/deploy/1.8+/
-        #rm -rf metrics-server
+        # kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.1/components.yaml
 
         unset KUBECONFIG
     path: /usr/local/bin/init.sh
