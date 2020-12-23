@@ -53,7 +53,7 @@ data "template_cloudinit_config" "master_config" {
 resource "openstack_networking_port_v2" "master" {
   network_id     = "${openstack_networking_network_v2.private.id}"
   admin_state_up = "true"
-
+  security_group_ids = ["${openstack_networking_secgroup_v2.secgroup_master.id}", "${openstack_networking_secgroup_v2.secgroup_node.id}"]
   fixed_ip {
     subnet_id = "${openstack_networking_subnet_v2.cluster_subnet.id}"
   }
@@ -63,7 +63,6 @@ resource "openstack_compute_instance_v2" "master" {
   name            = "${var.cluster_name}-master"
   flavor_name     = "${var.flavor}"
   key_pair        = "${openstack_compute_keypair_v2.basic_keypair.id}"
-  security_groups = ["${openstack_networking_secgroup_v2.secgroup_master.name}", "${openstack_networking_secgroup_v2.secgroup_node.name}"]
   user_data       = "${data.template_cloudinit_config.master_config.rendered}"
 
   metadata = {
