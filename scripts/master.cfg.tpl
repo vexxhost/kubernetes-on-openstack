@@ -226,6 +226,9 @@ write_files:
                 loadbalance
             }
         kind: ConfigMap
+        metadata:
+          name: coredns
+          namespace: kube-system
     path: /etc/kubernetes/addons/coredns-hack.yaml
     owner: root:root
     permissions: '0600'
