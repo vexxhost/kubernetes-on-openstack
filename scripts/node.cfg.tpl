@@ -50,7 +50,7 @@ write_files:
         nodeRegistration:
           criSocket: /run/containerd/containerd.sock
           kubeletExtraArgs:
-            node-labels: "node-role.kubernetes.io/node=\"\""
+            node-labels: "node.kubernetes.io/node=\"\""
             container-runtime: remote
             container-runtime-endpoint: unix:///run/containerd/containerd.sock
     path: /etc/kubernetes/kubeadm.yaml
