@@ -259,7 +259,7 @@ write_files:
         export KUBECONFIG=/etc/kubernetes/admin.conf
         kubectl apply -f "https://docs.projectcalico.org/archive/v3.15/manifests/calico.yaml"
 
-        # kubectl apply -n kube-system  -f "/etc/kubernetes/addons"
+        kubectl apply -n kube-system  -f "/etc/kubernetes/addons"
         # Install Metrics Server
         # kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.1/components.yaml
 
