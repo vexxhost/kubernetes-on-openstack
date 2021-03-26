@@ -1,12 +1,3 @@
-# **This repositroy is only in maintenance mode and will be archived in the near future**
-
-We move this repositroy in maintenance mode for the following reasons:
-
-- This was a MVP for an easy Kubernetes installation based on community tools like [kubeadm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm) and [terraform](https://www.terraform.io)
-- The OpenStack integration is still brittle (e.g. `SecurityGroups` are not created in a reliable fasion)
-- Critical features like updates are missing
-- The setup is very opinionated (but simple)
-- There are other tools to bootstrap a Kubernetes cluster on OpenStack (even if these tools are often more complex)
 
 ## Kubernetes on OpenStack
 
@@ -24,21 +15,6 @@ Take a look at the example provided in the `example` folder. It contains three f
 
 We assume `example` to be your working directory for all following commands.
 
-### Install keystone auth plugin
-
-The Kubernetes cluster will use Keystone authentication (over a WebHook). For mor details look at the official [docs](https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/keystone-auth/using-keystone-webhook-authenticator-and-authorizer.md#new-kubectl-clients-from-v1110-and-later) or just use the quick start:
-
-```bash
-VERSION=v1.19.0
-OS=$(uname | tr '[:upper:]' '[:lower:]')
-curl -sLO "https://github.com/kubernetes/cloud-provider-openstack/releases/download/${VERSION}/cloud-provider-openstack-${VERSION}-${OS}-amd64.tar.gz"
-tar xfz cloud-provider-openstack-${VERSION}-${OS}-amd64.tar.gz
-rm cloud-provider-openstack-${VERSION}-${OS}-amd64.tar.gz
-
-mkdir $(pwd)/bin
-cp ${OS}-amd64/client-keystone-auth $(pwd)/bin/
-rm -rf ${OS}-amd64
-```
 
 ### Reference the module correctly
 
@@ -46,7 +22,7 @@ As long as you keep the `example` folder inside the module repository, the refer
 
 ```hcl
    module "my_cluster" {
-     source = "git::https://github.com/inovex/kubernetes-on-openstack.git?ref=v1.0.0"
+     source = "git::https://github.com/vexxhost/kubernetes-on-openstack.git?ref=v1.0.0"
 
      # ...
    }
@@ -128,23 +104,13 @@ unset MASTER_IP
 unset CLUSTER_NAME
 ```
 
-## Automatically deployed components
-
-- [cloud-provider-openstack](https://github.com/kubernetes/cloud-provider-openstack)
-- [calico](https://docs.projectcalico.org/v3.4/getting-started/kubernetes/installation/calico#installing-with-the-kubernetes-api-datastore50-nodes-or-less)
-
-## Shared environments
-
-### Currently blocked
-
-In order to create a shared Kubernetes cluster for multiple users we can use [application credentials](https://docs.openstack.org/python-openstackclient/rocky/cli/command-objects/application-credentials.html)
-
-```bash
-openstack --os-cloud <cloud> --os-project-id=<project-id> application credential create --restricted kubernetes
-```
-
-more docs will follow when the feature is merged.
-
 ## Notes
 
-If you want to use containerd in version 1.2.2 you will probably face [this containerd issue](https://github.com/containerd/containerd/issues/2840) if you use images from [quay.io](https://quay.io)
+If you want to deploy other versions of k8s, you have to check the compatible versions of containerd and CNI.
+
+# Limitations
+
+- This is a MVP for an easy Kubernetes installation based on community tools like [kubeadm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm) and [terraform](https://www.terraform.io)
+- Calico is used as a CNI plugin.
+- IT is just to provision the k8s cluster, not including upgrade.
+
