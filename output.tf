@@ -1,28 +1,28 @@
 output "master_ip" {
-  value = "${openstack_networking_floatingip_v2.public_ip.address}"
+  value = openstack_networking_floatingip_v2.public_ip.address
 }
 
 data "template_file" "kubeconfig" {
-  template = "${file("${path.module}/templates/kubeconfig.tpl")}"
+  template = file("${path.module}/templates/kubeconfig.tpl")
 
   vars = {
-    username       = "${var.username}"
-    password       = "${var.password}"
-    auth_url       = "${var.auth_url}"
-    domain_name    = "${var.domain_name}"
+    username       = var.username
+    password       = var.password
+    auth_url       = var.auth_url
+    domain_name    = var.domain_name
     api_server_url = "https://${openstack_networking_floatingip_v2.public_ip.address}:6443"
-    cluster_name   = "${var.cluster_name}"
-    auth_plugin    = "${pathexpand("./bin/client-keystone-auth")}"
-    tenant_name    = "${var.tenant_name}"
+    cluster_name   = var.cluster_name
+    auth_plugin    = pathexpand("./bin/client-keystone-auth")
+    tenant_name    = var.tenant_name
   }
 }
 
 resource "local_file" "kubeconfig" {
-  content  = "${data.template_file.kubeconfig.rendered}"
+  content  = data.template_file.kubeconfig.rendered
   filename = "${path.module}/kubeconfig"
 }
 
 output "kubeconfig" {
   sensitive = true
-  value     = "${data.template_file.kubeconfig.rendered}"
+  value     = data.template_file.kubeconfig.rendered
 }
