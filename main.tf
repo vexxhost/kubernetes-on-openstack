@@ -78,6 +78,11 @@ resource "openstack_compute_instance_v2" "master" {
     boot_index            = 0
     delete_on_termination = true
   }
+
+/*  depends_on = [
+    openstack_compute_keypair_v2.basic_keypair,
+  ]
+*/
 }
 
 
@@ -136,4 +141,9 @@ resource "openstack_compute_instance_v2" "node" {
     boot_index            = 0
     delete_on_termination = true
   }
+/*
+  depends_on = [
+    openstack_compute_keypair_v2.basic_keypair,
+  ]
+*/
 }

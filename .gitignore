@@ -7,4 +7,4 @@ terraform.tfstate.backup
 scripts/bootstrap_master.sh
 bin
 kubeconfig
-
+.terraform.*

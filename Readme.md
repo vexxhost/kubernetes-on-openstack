@@ -112,5 +112,15 @@ If you want to deploy other versions of k8s, you have to check the compatible ve
 
 - This is a MVP for an easy Kubernetes installation based on community tools like [kubeadm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm) and [terraform](https://www.terraform.io)
 - Calico is used as a CNI plugin.
-- IT is just to provision the k8s cluster, not including upgrade.
+- It is just to provision the k8s cluster, not including upgrade.
 
+# Version compatibility
+
+If you want to use containerd in version 1.2.2 you will probably face [this containerd issue](https://github.com/containerd/containerd/issues/2840) if you use images from [quay.io](https://quay.io)
+
+For kubernetes v1.19.0, you need to use following verions.
+- containerd 1.3.4 
+- cni 0.8.6
+For kubernetes v1.19.4,
+- containerd 1.3.4 
+- cni 0.8.7
